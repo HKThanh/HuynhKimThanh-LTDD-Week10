@@ -1,37 +1,39 @@
 import { View, Text, TextInput, Pressable, FlatList, SafeAreaView } from 'react-native'
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-// import TodoItem from '../components/TodoItem';
-import TodoItem2 from '../components/TodoItem(2)';
+import React, { useEffect, useState } from 'react';
+import  TodoItem3  from '../components/TodoItem(3)';
+import { useRecoilState } from 'recoil';
+import { todoState } from '../todoAtom';
 import { setTodos, addTodo } from '../todoSlice';
 import axios from 'axios';
 
-const TodoApp = () => {
-    const API_URL = 'https://66ff3a172b9aac9c997e9862.mockapi.io/tasks';
+const API_URL = 'https://66ff3a172b9aac9c997e9862.mockapi.io/tasks';
 
-    const dispatch = useDispatch();
-    const todos = useSelector(state => state.todoToolKit);
+const TodoApp = () => {
+
+    const [todos, setTodos] = useRecoilState(todoState);
     const [text, setText] = useState('');
 
     useEffect(() => {
         const fetchTodos = async () => {
-            const response = await axios.get(API_URL);
-            dispatch(setTodos(response.data));
+            try {
+                const response = await axios.get(API_URL);
+                setTodos(response.data);
+            } catch (error) {
+                console.error('Failed to fetch todos: ', error);
+            }
         };
         fetchTodos();
-    }, [dispatch]);
+    }, [setTodos]);
 
-    console.log(todos);
-
-    const handleAdd = () => {
+    const handleAdd = async () => {
         if (text.trim()) {
             const newTodo = {
                 id: Date.now().toString(),
                 createdAt: new Date().toISOString(),
                 title: text,
             };
-            dispatch(addTodo(newTodo));
+            const response = await axios.post(API_URL, newTodo);
+            setTodos([...todos, newTodo]);
             setText('');
         }
     }
@@ -71,7 +73,7 @@ const TodoApp = () => {
             </View>
             <FlatList
                 data={todos}
-                renderItem={({ item }) => <TodoItem2 item={item} />}
+                renderItem={({ item }) => <TodoItem3 item={item} />}
                 keyExtractor={(item, index) => index.toString()}
             />
         </SafeAreaView>
