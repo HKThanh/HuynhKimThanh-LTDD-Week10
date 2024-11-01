@@ -1,9 +1,34 @@
 import { View, Text, TextInput, Pressable, FlatList, SafeAreaView } from 'react-native'
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import TodoItem from '../components/TodoItem';
 
 const TodoApp = () => {
+    const dispatch = useDispatch();
+    const todos = useSelector(state => state.todos);
+    const [text, setText] = useState('');
+
+    useEffect(() => {
+        dispatch({ type: 'FETCH_TODOS' });
+    }, [dispatch]);
+
+    console.log(todos);
+
+    const handleAdd = () => {
+        if (text.trim()) {
+            dispatch({
+                type: 'ADD_TODO_REQUEST',
+                payload: {
+                    id: Date.now().toString(),
+                    createdAt: new Date().toISOString(),
+                    title: text
+                },
+            });
+            setText('');
+        }
+    }
+
     return (
         <SafeAreaView style={{flex: 1}}>
             <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -16,14 +41,18 @@ const TodoApp = () => {
                         padding: 10,
                         borderRadius: 10,
                     }}
+                    onChangeText={setText}
                 />
-                <Pressable style={{
-                    backgroundColor: 'blue',
-                    padding: 10,
-                    borderRadius: 10,
-                    marginTop: 10,
-                    width: '80%',
-                }}>
+                <Pressable 
+                    style={{
+                        backgroundColor: 'blue',
+                        padding: 10,
+                        borderRadius: 10,
+                        marginTop: 10,
+                        width: '80%',
+                    }}
+                    onPress={handleAdd}
+                >
                     <Text style={{
                         color: 'white',
                         textAlign: 'center',
@@ -33,8 +62,8 @@ const TodoApp = () => {
                 </Pressable>
             </View>
             <FlatList
-                data={[]}
-                renderItem={({ item }) => <TodoItem item={item} deleteTodo={() => {}} />}
+                data={todos}
+                renderItem={({ item }) => <TodoItem item={item} />}
                 keyExtractor={(item, index) => index.toString()}
             />
         </SafeAreaView>
